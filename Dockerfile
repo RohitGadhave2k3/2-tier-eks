@@ -35,13 +35,17 @@
 # CMD ["python", "app.py"]
 
 # Use an official Python runtime as a parent image
+# Use an official Python runtime
 FROM python:3.9-slim
 
-# Disable pyc files & enable unbuffered output
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    FLASK_APP=app.py \
+    FLASK_RUN_HOST=0.0.0.0 \
+    FLASK_RUN_PORT=5000
 
-# Install system dependencies required by mysql-connector-python
+# Install system dependencies for MySQL
 RUN apt-get update && apt-get install -y \
     default-libmysqlclient-dev gcc \
     && rm -rf /var/lib/apt/lists/*
@@ -49,22 +53,17 @@ RUN apt-get update && apt-get install -y \
 # Set work directory
 WORKDIR /app
 
-# Copy requirements first (for Docker caching)
+# Copy requirements first for caching
 COPY requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the project
-COPY . .
+# Copy project files (including templates)
+COPY . /app
 
 # Expose Flask port
 EXPOSE 5000
 
-# Set environment variables for Flask
-ENV FLASK_APP=app.py \
-    FLASK_RUN_HOST=0.0.0.0 \
-    FLASK_RUN_PORT=5000
-
-# Run the Flask application
+# Run Flask app
 CMD ["python", "app.py"]
