@@ -1,0 +1,105 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: hostel-management
+#   labels:
+#     app: hostel-management
+# spec:
+#   replicas: 2
+#   selector:
+#     matchLabels:
+#       app: hostel-management
+#   template:
+#     metadata:
+#       labels:
+#         app: hostel-management
+#     spec:
+#       containers:
+#         - name: hostel-management
+#           image: 502710547370.dkr.ecr.us-east-1.amazonaws.com/hostel-management:latest
+#           ports:
+#             - containerPort: 5000
+#           env:
+#             - name: DB_HOST
+#               value: hostel-db
+#             - name: DB_USER
+#               value: root
+#             - name: DB_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: db-secret
+#                   key: password
+#             - name: DB_NAME
+#               value: hostel_db
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: db-secret
+# type: Opaque
+# data:
+#   password: YWRtaW5AMTIz  # base64 of admin@123
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hostel-management
+  labels:
+    app: hostel-management
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hostel-management
+  template:
+    metadata:
+      labels:
+        app: hostel-management
+    spec:
+      containers:
+        - name: hostel-management
+          image: 502710547370.dkr.ecr.us-east-1.amazonaws.com/hostel-management:latest
+          ports:
+            - containerPort: 5000
+
+          # Environment variables for Flask app
+          env:
+            - name: DB_HOST
+              value: hostel-db
+            - name: DB_USER
+              value: root
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+            - name: DB_NAME
+              value: hostel_db
+            - name: DB_PORT
+              value: "3306"
+            - name: FLASK_SECRET
+              value: "my-k8s-secret"
+
+          # Health Probes
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+data:
+  password: YWRtaW5AMTIz   # base64(admin@123)

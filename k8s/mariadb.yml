@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hostel-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hostel-db
+  template:
+    metadata:
+      labels:
+        app: hostel-db
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:10.6
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: admin@123
+            - name: MYSQL_DATABASE
+              value: hostel_db
+          ports:
+            - containerPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hostel-db
+spec:
+  selector:
+    app: hostel-db
+  ports:
+    - port: 3306
+      targetPort: 3306
+
