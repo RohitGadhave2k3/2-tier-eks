@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
+
 <div class="card">
+
+  <!-- 🔍 Toolbar -->
   <div class="toolbar">
     <div class="search">
       <form method="get" action="/" style="display:flex; gap:8px; align-items:center;">
-        <input type="text" name="keyword" placeholder="Search by ID, name, room or phone..." value="{{ keyword | default('') }}" />
+        <input type="text" name="keyword" placeholder="Search by ID, name, room or phone..."
+               value="{{ keyword | default('') }}" />
         <button class="btn" type="submit">Search</button>
         <a class="btn alt" href="/">Reset</a>
       </form>
@@ -15,6 +19,7 @@
     </div>
   </div>
 
+  <!-- 🧑‍🎓 Students Table -->
   <table aria-label="Students table">
     <thead>
       <tr>
@@ -26,16 +31,21 @@
         <th style="width:220px">Actions</th>
       </tr>
     </thead>
+
     <tbody>
       {% for s in students %}
       <tr>
         <td><strong>{{ s.id }}</strong></td>
         <td>{{ s.name }}</td>
+
         <td class="muted">{{ s.room }}</td>
+
         <td>
           <div class="muted">{{ s.phone or '—' }}</div>
           <div class="muted" style="font-size:13px;">{{ s.email or '' }}</div>
         </td>
+
+        <!-- Fee Status -->
         <td>
           {% if s.fees_paid %}
             <span class="badge paid">Paid</span>
@@ -43,13 +53,24 @@
             <span class="badge pending">Pending</span>
           {% endif %}
         </td>
+
+        <!-- Action Buttons -->
         <td>
-          <div class="actions">
+          <div class="actions" style="display:flex; gap:8px; flex-wrap:wrap;">
+
             {% if not s.fees_paid %}
-              <a class="btn" href="/pay/{{ s.id }}">Mark Paid</a>
+            <form action="/pay/{{ s.id }}" method="post" style="display:inline;">
+              <button class="btn" type="submit">Mark Paid</button>
+            </form>
             {% endif %}
+
             <a class="btn alt" href="/edit/{{ s.id }}">Edit</a>
-            <a class="btn danger" href="/delete/{{ s.id }}">Delete</a>
+
+            <form action="/delete/{{ s.id }}" method="post" style="display:inline;"
+                  onsubmit="return confirm('Are you sure you want to delete this student?');">
+              <button class="btn danger" type="submit">Delete</button>
+            </form>
+
           </div>
         </td>
       </tr>
@@ -60,6 +81,7 @@
   {% if students|length == 0 %}
     <p style="margin-top:16px; color:#7b8794;">No students found.</p>
   {% endif %}
-</div>
-{% endblock %}
 
+</div>
+
+{% endblock %}
